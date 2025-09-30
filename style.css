@@ -1,0 +1,82 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* Body Styling */
+body {
+    background-color: #000;
+    color: #ff0000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Container */
+.container {
+    max-width: 900px;
+    background-color: #111;
+    padding: 40px;
+    border: 3px solid #ff0000;
+    border-radius: 15px;
+    box-shadow: 0 0 30px #ff0000;
+}
+
+/* Headings */
+h1 {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+}
+
+/* Paragraphs */
+p {
+    font-size: 1.3rem;
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+/* Timeline */
+.timeline {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 50px;
+}
+
+/* Screenshots */
+.screenshots {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.screenshots img {
+    width: 280px;
+    height: auto;
+    border: 2px solid #ff0000;
+    border-radius: 10px;
+    transition: transform 0.3s;
+}
+
+.screenshots img:hover {
+    transform: scale(1.05);
+}
+
+/* Footer */
+footer {
+    font-size: 1rem;
+    margin-top: 20px;
+    color: #ff5555;
+}
