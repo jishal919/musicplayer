@@ -710,12 +710,12 @@ function showHome() {
 
 function openSidebar() {
   document.getElementById('sidebar').classList.add('mobile-open');
-  document.getElementById('sidebar-overlay').style.display = 'block';
+  document.getElementById('sidebar-overlay').classList.add('active');
 }
 
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('mobile-open');
-  document.getElementById('sidebar-overlay').style.display = 'none';
+  document.getElementById('sidebar-overlay').classList.remove('active');
 }
 
 // ===== RECENTLY PLAYED =====
