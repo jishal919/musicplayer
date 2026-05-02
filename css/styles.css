@@ -508,7 +508,6 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);display:flex;flex-direct
   :root{--sidebar-w:0px}
   #sidebar{position:fixed;left:0;top:0;bottom:var(--player-h);width:80vw;max-width:300px;transform:translateX(-100%)}
   #sidebar.mobile-open{transform:translateX(0)}
-  #sidebar-overlay{display:block!important}
   #mobile-menu-btn{display:flex!important}
   .playlist-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
   #home-view{padding:16px}
@@ -523,6 +522,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);display:flex;flex-direct
   .song-list{padding:4px 8px 100px}
 }
 #sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9;backdrop-filter:blur(4px)}
+#sidebar-overlay.active{display:block}
 #mobile-menu-btn{display:none;background:none;border:none;color:var(--text2);cursor:pointer;font-size:22px;padding:8px;margin-right:4px}
 
 /* Input range reset */
