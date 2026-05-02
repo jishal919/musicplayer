@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resonance — Music Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-logo">Resonance</div>
+  <div style="font-size:13px;color:var(--text3)">Loading your music…</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+</div>
+
+<div id="app">
+  <div id="main">
+    <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+    <nav id="sidebar">
+      <div id="logo">Resonance <span>/ player</span></div>
+      <div id="search-wrap">
+        <div class="search-wrap-inner">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="search" placeholder="Search songs, artists…" oninput="onSearch(this.value)">
+        </div>
+      </div>
+      <div class="nav-label">Playlists</div>
+      <div id="playlist-nav"></div>
+    </nav>
+
+    <div id="content">
+      <div id="bg-art"></div>
+      <div id="home-view">
+        <button id="mobile-menu-btn" onclick="openSidebar()">☰</button>
+        <div class="view-title">Your Library</div>
+        <div class="view-sub">Select a playlist to start listening</div>
+        <div class="playlist-grid" id="playlist-grid"></div>
+      </div>
+      <div id="song-view">
+        <div class="song-view-header">
+          <div style="display:flex;align-items:center;gap:8px">
+            <button id="mobile-menu-btn2" style="display:none;background:none;border:none;color:var(--text2);cursor:pointer;font-size:22px;padding:8px 8px 8px 0" onclick="openSidebar()">☰</button>
+            <button class="back-btn" onclick="showHome()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+              Back
+            </button>
+          </div>
+          <div class="song-view-info">
+            <div id="sv-thumb-wrap"></div>
+            <div class="song-view-meta">
+              <div class="song-view-type">Playlist</div>
+              <div class="song-view-name" id="sv-name"></div>
+              <div class="song-view-count" id="sv-count"></div>
+            </div>
+          </div>
+        </div>
+        <div class="song-view-actions">
+          <button class="btn-play-all" onclick="playAll()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+            Play All
+          </button>
+          <button class="btn-shuffle-all" onclick="shuffleAll()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+            Shuffle
+          </button>
+        </div>
+        <div class="song-list" id="song-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mini Player -->
+  <div id="player" onclick="expandPlayer(event)">
+    <div id="player-track">
+      <img id="player-thumb" src="" alt="" loading="lazy">
+      <div id="player-song">
+        <div id="player-name">—</div>
+        <div id="player-artist" style="font-size:12px;color:var(--text3)">Select a song to play</div>
+        <div id="player-added-by"></div>
+      </div>
+      <button id="player-heart" onclick="event.stopPropagation();toggleLike()" title="Like">♡</button>
+    </div>
+    <div id="player-center" onclick="event.stopPropagation()">
+      <div id="player-controls">
+        <button class="ctrl-btn" id="shuffle-btn" onclick="toggleShuffle()" title="Shuffle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+        </button>
+        <button class="ctrl-btn" onclick="prevTrack()" title="Previous">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 20 9 12l10-8v16zM5 19V5h2v14H5z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="play-btn" onclick="togglePlay()" title="Play/Pause">
+          <svg id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+        </button>
+        <button class="ctrl-btn" onclick="nextTrack()" title="Next">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20V4l10 8-10 8zM19 5h2v14h-2V5z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="repeat-btn" onclick="cycleRepeat()" title="Repeat">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+      </div>
+      <div id="progress-wrap">
+        <span id="progress-time">0:00</span>
+        <div id="progress-bar" onmousedown="seekStart(event)" onclick="seek(event)">
+          <div id="progress-fill" style="width:0%"></div>
+        </div>
+        <span id="progress-dur">0:00</span>
+      </div>
+    </div>
+    <div id="player-right" onclick="event.stopPropagation()">
+      <div id="vol-wrap">
+        <span id="vol-icon" onclick="toggleMute()">🔊</span>
+        <input type="range" id="vol-slider" class="volume-slider" min="0" max="100" value="80">
+      </div>
+      <button id="expand-btn" onclick="expandPlayer(event)" title="Full Player">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Full Player -->
+<div id="full-player">
+  <div id="fp-bg"></div>
+  <div id="fp-bg-blur"></div>
+  <div id="fp-header">
+    <button id="fp-close" onclick="collapsePlayer()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+    </button>
+    <div id="fp-playlist-name">Now Playing</div>
+    <button id="fp-queue-btn" onclick="toggleQueue()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      Queue
+    </button>
+  </div>
+  <div id="fp-body">
+    <div id="fp-art-wrap">
+      <img id="fp-art" src="" alt="" loading="lazy">
+    </div>
+    <div id="fp-meta">
+      <div id="fp-meta-row">
+        <div>
+          <div id="fp-song-name">—</div>
+          <div id="fp-artist" style="margin-top:4px">—</div>
+          <div id="fp-added-by"></div>
+        </div>
+        <button id="fp-heart" onclick="toggleLike()">♡</button>
+      </div>
+    </div>
+    <div id="fp-progress-wrap">
+      <span id="fp-time">0:00</span>
+      <div id="fp-progress-bar" onmousedown="fpSeekStart(event)" onclick="fpSeek(event)">
+        <div id="fp-progress-fill" style="width:0%"></div>
+      </div>
+      <span id="fp-dur">0:00</span>
+    </div>
+    <div id="fp-controls">
+      <button class="fp-ctrl" id="fp-shuffle" onclick="toggleShuffle()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+      </button>
+      <button class="fp-ctrl" onclick="prevTrack()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 20 9 12l10-8v16zM5 19V5h2v14H5z"/></svg>
+      </button>
+      <button class="fp-ctrl" id="fp-play" onclick="togglePlay()">
+        <svg id="fp-play-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+      </button>
+      <button class="fp-ctrl" onclick="nextTrack()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20V4l10 8-10 8zM19 5h2v14h-2V5z"/></svg>
+      </button>
+      <button class="fp-ctrl" id="fp-repeat" onclick="cycleRepeat()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      </button>
+    </div>
+    <div id="fp-extras">
+      <div id="fp-vol-wrap">
+        <span id="fp-vol-icon" onclick="toggleMute()">🔊</span>
+        <input type="range" id="fp-vol-slider" class="volume-slider" min="0" max="100" value="80">
+      </div>
+      <div id="fp-speed-wrap">
+        <span class="fp-speed-label" style="font-size:12px;color:var(--text3)">Speed</span>
+        <select id="fp-speed" onchange="setSpeed(this.value)">
+          <option value="0.5">0.5×</option>
+          <option value="0.75">0.75×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.25">1.25×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Queue Panel -->
+<div id="queue-panel">
+  <div id="queue-header">
+    <div id="queue-title">Queue</div>
+    <button id="queue-close" onclick="toggleQueue()">✕</button>
+  </div>
+  <div id="queue-list"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<audio id="audio-el"></audio>
+
+<script src="data.js"></script>
+<script src="js/music-player.js"></script>
+</body>
+</html>
