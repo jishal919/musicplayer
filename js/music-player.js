@@ -168,7 +168,6 @@ function restoreLastPlayed() {
     queue = [...currentSongs];
     const song = queue[idx];
     if (song) {
-      updatePlayerUI(song);
       audio.src = song.music;
       audio.currentTime = last.position || 0;
     }
@@ -372,6 +371,7 @@ function shuffleQueue() {
 
 function loadAndPlay(song) {
   if (!song) return;
+  showMiniPlayer();
   audio.src = song.music;
   audio.load();
   audio.play().catch(() => {});
@@ -419,6 +419,10 @@ function updatePlayerUI(song) {
   }
 }
 
+function showMiniPlayer() {
+  document.body.classList.add('player-visible');
+}
+
 function updateBgArt(img) {
   if (!img) return;
   document.getElementById('bg-art').style.background =
@@ -430,7 +434,7 @@ function updateBgArt(img) {
 function togglePlay() {
   if (!audio.src && !audio.currentSrc) return;
   if (isPlaying) { audio.pause(); isPlaying = false; }
-  else { audio.play().catch(() => {}); isPlaying = true; }
+  else { showMiniPlayer(); audio.play().catch(() => {}); isPlaying = true; }
   updatePlayBtn();
   if (queue[queueIndex]) updatePlayerUI(queue[queueIndex]);
 }
@@ -756,7 +760,7 @@ audio.addEventListener('ended', () => {
   nextTrack();
 });
 
-audio.addEventListener('play', () => { isPlaying = true; updatePlayBtn(); });
+audio.addEventListener('play', () => { showMiniPlayer(); isPlaying = true; updatePlayBtn(); });
 audio.addEventListener('pause', () => { isPlaying = false; updatePlayBtn(); });
 
 audio.addEventListener('error', () => {
