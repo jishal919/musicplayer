@@ -33,6 +33,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);display:flex;flex-direct
 /* ===== LAYOUT ===== */
 #app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 #main{display:flex;flex:1;overflow:hidden;position:relative}
+body:not(.player-visible) #main{height:100vh}
 
 /* ===== SIDEBAR ===== */
 #sidebar{
@@ -262,6 +263,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);display:flex;flex-direct
   flex-shrink:0;
   cursor:pointer;
 }
+body:not(.player-visible) #player{display:none}
 #player-track{display:flex;align-items:center;gap:12px;width:260px;flex-shrink:0}
 #player-thumb{width:50px;height:50px;border-radius:10px;object-fit:cover;background:var(--bg3);flex-shrink:0;transition:transform 0.3s}
 #player-thumb.playing{animation:albumSpin 20s linear infinite}
@@ -506,7 +508,8 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);display:flex;flex-direct
 /* ===== MOBILE ===== */
 @media(max-width:768px){
   :root{--sidebar-w:0px}
-  #sidebar{position:fixed;left:0;top:0;bottom:var(--player-h);width:80vw;max-width:300px;transform:translateX(-100%)}
+  #sidebar{position:fixed;left:0;top:0;bottom:0;width:80vw;max-width:300px;transform:translateX(-100%)}
+  body.player-visible #sidebar{bottom:var(--player-h)}
   #sidebar.mobile-open{transform:translateX(0)}
   #mobile-menu-btn{display:flex!important}
   .playlist-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
