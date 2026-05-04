@@ -351,6 +351,12 @@ body:not(.player-visible) #player{display:none}
 }
 #fp-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:24px;padding:6px;border-radius:10px;transition:color 0.15s,background 0.15s}
 #fp-close:hover{color:var(--text);background:var(--surface2)}
+.fp-header-btn{
+  background:none;border:none;color:var(--text2);cursor:pointer;
+  padding:8px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  transition:color 0.15s,background 0.15s;
+}
+.fp-header-btn:hover{color:var(--text);background:var(--surface2)}
 #fp-playlist-name{font-size:13px;font-weight:500;color:var(--text3);text-transform:capitalize;letter-spacing:0.5px}
 #fp-body{
   flex:1;display:flex;flex-direction:column;align-items:center;
