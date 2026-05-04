@@ -33,7 +33,9 @@ async function init() {
     musicData = {};
   }
   applyMusicData(musicData);
-  restoreLastPlayed();
+  if (!handleDeepLink()) {
+    restoreLastPlayed();
+  }
   document.getElementById('loading').style.display = 'none';
 }
 
@@ -738,6 +740,64 @@ function showToast(msg) {
   t.classList.add('show');
   clearTimeout(window._toastTimer);
   window._toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ===== DEEP LINK & SHARE =====
+function handleDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const songParam = params.get('song');
+  if (!songParam) return false;
+
+  const match = songParam.match(/^(.+)\[(\d+)\]$/);
+  if (!match) return false;
+
+  const pl = match[1];
+  const idx = parseInt(match[2]);
+
+  if (musicData[pl] && idx >= 0 && idx < musicData[pl].length) {
+    openPlaylist(pl);
+    playSong(musicData[pl], idx);
+    return true;
+  }
+  return false;
+}
+
+function shareCurrentSong() {
+  if (queueIndex < 0 || !currentPlaylist) {
+    showToast("No song playing to share");
+    return;
+  }
+
+  const currentSong = queue[queueIndex];
+  const originalSongs = musicData[currentPlaylist];
+  const originalIdx = originalSongs.findIndex(s => s.music === currentSong.music);
+
+  if (originalIdx === -1) {
+    showToast("Error generating share link");
+    return;
+  }
+
+  const url = new URL(window.location.origin + window.location.pathname);
+  url.searchParams.set('song', `${currentPlaylist}[${originalIdx}]`);
+  const shareUrl = url.toString();
+
+  if (navigator.share) {
+    navigator.share({
+      title: `Terminal Player - ${currentSong.name}`,
+      text: `Listen to "${currentSong.name}" by ${currentSong.artist}`,
+      url: shareUrl
+    }).catch(() => copyToClipboard(shareUrl));
+  } else {
+    copyToClipboard(shareUrl);
+  }
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast("Link copied to clipboard!");
+  }).catch(() => {
+    showToast("Failed to copy link");
+  });
 }
 
 // ===== AUDIO EVENTS =====
