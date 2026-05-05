@@ -808,16 +808,20 @@ function toggleLikeSong(key, name, btn) {
 
 // ===== FULL PLAYER =====
 function expandPlayer(e) {
-  if (e && e.target && (
+  // Allow expansion if clicking the dedicated button OR any non-excluded area
+  const isExcluded = e && e.target && (
     e.target.closest('.ctrl-btn') || 
     e.target.closest('.volume-slider') || 
     e.target.closest('#vol-icon') || 
-    e.target.closest('#expand-btn') || 
     e.target.closest('#player-heart') ||
     e.target.closest('#progress-bar') ||
     e.target.closest('#fp-vol-icon') ||
     e.target.closest('#fp-speed')
-  )) return;
+  );
+
+  // If it's an excluded element, and NOT the expand-btn itself, then return
+  if (isExcluded && !(e && e.target && e.target.closest('#expand-btn'))) return;
+
   fullOpen = true;
   dom.fullPlayer.classList.add('open');
 }
@@ -865,22 +869,103 @@ function onSearch(q) {
   }
 }
 
+// ===== RENDER SIDEBAR =====
+function renderSidebar() {
+  dom.playlistNav.innerHTML = '';
+  
+  if (searchQuery) {
+    // Search for songs across all playlists
+    const songResults = [];
+    playlists.forEach(pl => {
+      const songs = getPlaylistSongs(pl);
+      songs.forEach((song, idx) => {
+        if (songMatchesSearch(song)) {
+          songResults.push({ song, pl, idx });
+        }
+      });
+    });
+
+    if (songResults.length) {
+      const label = document.createElement('div');
+      label.className = 'nav-label';
+      label.textContent = 'Songs';
+      dom.playlistNav.appendChild(label);
+
+      songResults.slice(0, 15).forEach(res => {
+        const { song, pl, idx } = res;
+        const div = document.createElement('div');
+        div.className = 'playlist-item';
+        div.onclick = () => {
+          openPlaylist(pl);
+          playSong(musicData[pl], idx);
+          closeSidebar();
+        };
+        div.innerHTML = `
+          <img class="pl-thumb" src="${escapeHtml(song.img || '')}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="pl-thumb-placeholder" style="display:none">${getPlaylistInitial(pl)}</div>
+          <div class="pl-info">
+            <div class="pl-name">${escapeHtml(cleanName(song.name))}</div>
+            <div class="pl-count">${escapeHtml(cleanArtist(song.artist))}</div>
+          </div>
+        `;
+        dom.playlistNav.appendChild(div);
+      });
+    }
+  }
+
+  // Playlists section
+  const filteredPl = playlists.filter(pl =>
+    !searchQuery || pl.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getPlaylistSongs(pl).some(songMatchesSearch)
+  );
+
+  if (filteredPl.length) {
+    const label = document.createElement('div');
+    label.className = 'nav-label';
+    label.textContent = 'Playlists';
+    dom.playlistNav.appendChild(label);
+
+    filteredPl.forEach(pl => {
+      const songs = getPlaylistSongs(pl);
+      const firstImg = getPlaylistImage(pl, songs);
+      const safeName = escapeHtml(pl);
+      const initial = getPlaylistInitial(pl);
+      const div = document.createElement('div');
+      div.className = 'playlist-item' + (currentPlaylist === pl ? ' active' : '');
+      div.onclick = () => { openPlaylist(pl); closeSidebar(); };
+      div.innerHTML = `
+        ${firstImg ? `<img class="pl-thumb" src="${escapeHtml(firstImg)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="pl-thumb-placeholder" style="display:none">${initial}</div>` :
+          `<div class="pl-thumb-placeholder">${initial}</div>`}
+        <div class="pl-info">
+          <div class="pl-name">${safeName}</div>
+          <div class="pl-count">${songs.length} songs</div>
+        </div>
+      `;
+      dom.playlistNav.appendChild(div);
+    });
+  }
+
+  if (!filteredPl.length && (!searchQuery || (searchQuery && dom.playlistNav.children.length === 0))) {
+    dom.playlistNav.innerHTML = '<div class="empty-state"><div class="empty-state-text">No results found</div></div>';
+  }
+}
+
 // ===== NAVIGATION =====
 function showHome() {
-  document.getElementById('home-view').style.display = 'block';
-  document.getElementById('song-view').style.display = 'none';
-  document.getElementById('song-view').classList.remove('active');
+  dom.homeView.style.display = 'block';
+  dom.songView.style.display = 'none';
+  dom.songView.classList.remove('active');
   document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
 }
 
 function openSidebar() {
-  document.getElementById('sidebar').classList.add('mobile-open');
-  document.getElementById('sidebar-overlay').classList.add('active');
+  dom.sidebar.classList.add('mobile-open');
+  dom.sidebarOverlay.classList.add('active');
 }
 
 function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('mobile-open');
-  document.getElementById('sidebar-overlay').classList.remove('active');
+  dom.sidebar.classList.remove('mobile-open');
+  dom.sidebarOverlay.classList.remove('active');
 }
 
 // ===== RECENTLY PLAYED =====
