@@ -110,7 +110,7 @@
         <span id="progress-dur">0:00</span>
       </div>
     </div>
-    <div id="player-right" onclick="event.stopPropagation()">
+    <div id="player-right">
       <div id="vol-wrap">
         <span id="vol-icon" onclick="toggleMute()">🔊</span>
         <input type="range" id="vol-slider" class="volume-slider" min="0" max="100" value="80">
@@ -211,7 +211,7 @@
 <!-- Toast -->
 <div id="toast"></div>
 
-<audio id="audio-el"></audio>
+<audio id="audio-el" preload="auto"></audio>
 
 <script src="data.js"></script>
 <script src="js/music-player.js"></script>
