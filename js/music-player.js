@@ -1,3 +1,6 @@
+// ===== CONSTANTS =====
+const API_BASE = 'https://terminal-music-api.vercel.app/api';
+
 // ===== STATE =====
 const DATA_URL = '/data.json';
 const DATA_URL_FALLBACK = 'data.json';
@@ -15,6 +18,7 @@ let prevVol = 80;
 let liked = {};
 let recentlyPlayed = [];
 let searchQuery = '';
+let apiResults = []; // New state for API search results
 let seeking = false;
 let fpSeeking = false;
 let volumeDragging = false;
@@ -495,10 +499,39 @@ function shuffleQueue() {
   }
 }
 
-function loadAndPlay(song) {
+function playApiSong(song) {
+  // If we're playing an API song, we treat the current results as a temporary playlist
+  queue = [...apiResults];
+  queueIndex = queue.findIndex(s => s.id === song.id);
+  currentPlaylist = 'Search Results';
+  loadAndPlay(song);
+}
+
+async function loadAndPlay(song) {
   if (!song) return;
   showMiniPlayer();
-  audio.src = song.music;
+
+  // If it's an API song, fetch the stream URL first
+  if (song.source === 'api') {
+    try {
+      showToast('Fetching stream URL...');
+      const response = await fetch(`${API_BASE}/stream?id=${song.id}`);
+      const data = await response.json();
+      if (data.success && data.streamUrl) {
+        audio.src = data.streamUrl;
+      } else {
+        showToast('Failed to get stream URL');
+        return;
+      }
+    } catch (err) {
+      console.error('Stream Fetch Error:', err);
+      showToast('Error connecting to music server');
+      return;
+    }
+  } else {
+    audio.src = song.music;
+  }
+
   audio.load();
   
   const playPromise = audio.play();
@@ -859,9 +892,49 @@ function renderQueue() {
 }
 
 // ===== SEARCH =====
-function onSearch(q) {
+let searchTimeout = null;
+
+async function onSearch(q) {
   searchQuery = q.trim();
+  
+  if (searchTimeout) clearTimeout(searchTimeout);
+  
+  if (!searchQuery) {
+    apiResults = [];
+    renderSidebar();
+    if (currentPlaylist && dom.songView.classList.contains('active')) {
+      const songs = getFilteredPlaylistSongs(currentPlaylist);
+      renderSongList(songs);
+      dom.svCount.textContent = `${songs.length} songs`;
+    }
+    return;
+  }
+
+  // Local filtering happens immediately
   renderSidebar();
+
+  // Debounced API search
+  searchTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/search?query=${encodeURIComponent(searchQuery)}&limit=15`);
+      const data = await response.json();
+      if (data.success) {
+        // Map API results to our internal song format
+        apiResults = data.tracks.map(track => ({
+          id: track.id,
+          name: track.title,
+          artist: track.artist,
+          img: track.thumbnail,
+          source: 'api', // Mark as API source
+          album: track.album
+        }));
+        renderSidebar();
+      }
+    } catch (err) {
+      console.error('API Search Error:', err);
+    }
+  }, 400);
+
   if (currentPlaylist && dom.songView.classList.contains('active')) {
     const songs = getFilteredPlaylistSongs(currentPlaylist);
     renderSongList(songs);
@@ -874,7 +947,7 @@ function renderSidebar() {
   dom.playlistNav.innerHTML = '';
   
   if (searchQuery) {
-    // Search for songs across all playlists
+    // 1. Local Song Results
     const songResults = [];
     playlists.forEach(pl => {
       const songs = getPlaylistSongs(pl);
@@ -888,10 +961,10 @@ function renderSidebar() {
     if (songResults.length) {
       const label = document.createElement('div');
       label.className = 'nav-label';
-      label.textContent = 'Songs';
+      label.textContent = 'Local Songs';
       dom.playlistNav.appendChild(label);
 
-      songResults.slice(0, 15).forEach(res => {
+      songResults.slice(0, 10).forEach(res => {
         const { song, pl, idx } = res;
         const div = document.createElement('div');
         div.className = 'playlist-item';
@@ -906,6 +979,32 @@ function renderSidebar() {
           <div class="pl-info">
             <div class="pl-name">${escapeHtml(cleanName(song.name))}</div>
             <div class="pl-count">${escapeHtml(cleanArtist(song.artist))}</div>
+          </div>
+        `;
+        dom.playlistNav.appendChild(div);
+      });
+    }
+
+    // 2. API Results (Online Search)
+    if (apiResults.length) {
+      const label = document.createElement('div');
+      label.className = 'nav-label';
+      label.textContent = 'Online Results';
+      dom.playlistNav.appendChild(label);
+
+      apiResults.forEach((song) => {
+        const div = document.createElement('div');
+        div.className = 'playlist-item';
+        div.onclick = () => {
+          playApiSong(song);
+          closeSidebar();
+        };
+        div.innerHTML = `
+          <img class="pl-thumb" src="${escapeHtml(song.img || '')}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="pl-thumb-placeholder" style="display:none">S</div>
+          <div class="pl-info">
+            <div class="pl-name">${escapeHtml(cleanName(song.name))}</div>
+            <div class="pl-artist">${escapeHtml(cleanArtist(song.artist))}</div>
           </div>
         `;
         dom.playlistNav.appendChild(div);
