@@ -357,7 +357,7 @@ body:not(.player-visible) #player{display:none}
   transition:color 0.15s,background 0.15s;
 }
 .fp-header-btn:hover{color:var(--text);background:var(--surface2)}
-#fp-playlist-name{font-size:13px;font-weight:500;color:var(--text3);text-transform:capitalize;letter-spacing:0.5px}
+#fp-playlist-name{font-size:25px;font-weight:500;text-transform:capitalize;letter-spacing:0.5px;}
 #fp-body{
   flex:1;display:flex;flex-direction:column;align-items:center;
   padding:20px 40px 0;position:relative;z-index:1;overflow-y:auto;
